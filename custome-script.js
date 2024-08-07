@@ -4,6 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('connect', () => {
         console.log('user connected from custome-script :- ', socket.id);
 
-        socket.emit('userJoined', socket.id);
+        socket.emit('userConnect', socket.id);
     });
 });
