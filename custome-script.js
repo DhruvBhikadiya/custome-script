@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
             colorDepth: screen.colorDepth,
             downlink: navigator.connection.downlink,
             batteryLevel: battery.level,
-            batteryStatus: battery.level,
             batteryCharging: batteryCharging
         };
 
