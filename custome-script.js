@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const socket = io(`http://127.0.0.1:8070`);
 
+    const content = document.getElementById('content');
     const currentuserId = document.getElementById('currentUserId').value;
     const currentuserName = document.getElementById('currentUserName').value;
     const logout = document.getElementById('logout');
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.on('userClicked', async () => {
             try {
 
-                const captureCanvas = await html2canvas(document.body, {
+                const captureCanvas = await html2canvas(content, {
                     scrollX: window.scrollX,
                     scrollY: 0,
                     x: window.scrollX,
