@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('userJoined', (data));
 
         logout.addEventListener('click', (e) => {
-            e.preventDefault();
             socket.emit('userLogout', (data));
         });
 
