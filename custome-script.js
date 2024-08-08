@@ -4,19 +4,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const currentuserId = document.getElementById('currentUserId').value;
     const currentuserName = document.getElementById('currentUserName').value;
+    const logout = document.getElementById('logout');
+    var ipAdd;
 
-    socket.on('connect', () => {
+    socket.on('connect', async () => {
         console.log('user connected :- ', socket.id);
 
         const socketId = socket.id;
 
+        const raw = await fetch('https://api.ipify.org?format=json');
+        const rawData = await raw.json();
+        ipAdd = rawData.ip;
+
+        const battery = await navigator.getBattery();
+        const batteryCharging = battery.charging ? true : false;
+
+        const deviceInfo = {
+            userAgent: navigator.userAgent,
+            connectionType: navigator.connection.effectiveType,
+            deviceMemory: navigator.deviceMemory,
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            colorDepth: screen.colorDepth,
+            downlink: navigator.connection.downlink,
+            batteryLevel: battery.level,
+            batteryStatus: battery.level,
+            batteryCharging: batteryCharging
+        };
+
         const data = {
             userName: currentuserName,
             userId: currentuserId,
-            socketId: socketId
+            socketId: socketId,
+            deviceInfo: deviceInfo
         };
 
         socket.emit('userJoined', (data));
+
+        logout.addEventListener('click', (e) => {
+            e.preventDefault();
+            socket.emit('userLogout', (data));
+        });
 
         socket.on('userClicked', async () => {
             try {
