@@ -56,8 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     y: window.scrollY,
                     width: window.innerWidth,
                     height: window.innerHeight,
-                    useCORS: true,
-                    scale: window.devicePixelRatio
+                    useCORS: true
                 });
 
                 console.log('Canvas created successfully:', captureCanvas);
