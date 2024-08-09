@@ -1,98 +1,104 @@
-const socket = io();
+document.addEventListener('DOMContentLoaded', () => {
 
-const currentuserId = document.getElementById('currentUserId').value;
-const currentuserName = document.getElementById('currentUserName').value;
-const logout = document.getElementById('logout');
-var ipAdd;
+    const socket = io(`http://127.0.0.1:8070`);
 
-socket.on('connect', async () => {
-    console.log('A new user connected :- ', socket.id);
-    const socketId = socket.id;
+    const content = document.getElementById('content');
+    const currentuserId = document.getElementById('currentUserId').value;
+    const currentuserName = document.getElementById('currentUserName').value;
+    const logout = document.getElementById('logout');
+    var ipAdd;
 
-    const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
-    ipAdd = await raw.json();
+    socket.on('connect', async () => {
+        console.log('user connected :- ', socket.id);
 
-    
-    const battery = await navigator.getBattery();
-    const batteryCharging = battery.charging ? true : false;
-    
-    const deviceInfo = {
-        userAgent: navigator.userAgent,
-        connectionType: navigator.connection.effectiveType,
-        deviceMemory: navigator.deviceMemory,
-        screenWidth: window.screen.width,
-        screenHeight: window.screen.height,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-        colorDepth: screen.colorDepth,
-        downlink: navigator.connection.downlink,
-        batteryLevel: battery.level,
-        batteryCharging: batteryCharging
-    };
-    console.log(deviceInfo,'--deviceInfo--');
-    
-    const data = {
-        userName: currentuserName,
-        userId: currentuserId,
-        socketId: socketId,
-        ipAdd: ipAdd,
-        deviceInfo: deviceInfo
-    };
+        const socketId = socket.id;
 
-    socket.emit('userJoined', (data));
+        const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
+        const rawData = await raw.json();
+        ipAdd = rawData.ip;
 
-    logout.addEventListener('click', (e) => {
-        socket.emit('userLogout', (data));
-    });
+        console.log(ipAdd, '--ipAdd--');
 
-    socket.on('userClicked', async () => {
-        try {
-            const captureCanvas = await html2canvas(document.body, {
-                scrollX: window.scrollX,
-                scrollY: 0,
-                x: window.scrollX,
-                y: window.scrollY,
-                width: window.innerWidth,
-                height: window.innerHeight,
-                useCORS: true
-            });
+        const battery = await navigator.getBattery();
+        const batteryCharging = battery.charging ? true : false;
 
-            console.log('Canvas created successfully:', captureCanvas);
+        const deviceInfo = {
+            userAgent: navigator.userAgent,
+            connectionType: navigator.connection.effectiveType,
+            deviceMemory: navigator.deviceMemory,
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
+            colorDepth: screen.colorDepth,
+            downlink: navigator.connection.downlink,
+            batteryLevel: battery.level,
+            batteryCharging: batteryCharging
+        };
 
-            const blob = await new Promise((resolve, reject) => {
-                captureCanvas.toBlob((blob) => {
-                    if (blob) {
-                        resolve(blob);
-                    } else {
-                        reject(new Error('Failed to create Blob from canvas'));
-                    }
-                }, 'image/png');
-            });
+        const data = {
+            userName: currentuserName,
+            userId: currentuserId,
+            socketId: socketId,
+            ipAdd: ipAdd,
+            deviceInfo: deviceInfo
+        };
 
-            console.log('Blob created successfully:', blob);
+        socket.emit('userJoined', (data));
 
-            const arrayBuffer = await blob.arrayBuffer();
-            console.log('ArrayBuffer created successfully:', arrayBuffer);
+        logout.addEventListener('click', (e) => {
+            socket.emit('userLogout', (data));
+        });
 
-            const chunkSize = 25 * 1024;
-            const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
-
-            console.log(totalChunks, '--totalChunks--');
-
-            for (let i = 0; i < totalChunks; i++) {
-                const start = i * chunkSize;
-                const end = Math.min(start + chunkSize, arrayBuffer.byteLength);
-                const chunk = arrayBuffer.slice(start, end);
-                console.log(chunk, '--chunk--');
-
-                socket.emit('sentDataChunk', {
-                    chunk,
-                    index: i,
-                    totalChunks: totalChunks
+        socket.on('userClicked', async () => {
+            try {
+                const captureCanvas = await html2canvas(content, {
+                    scrollX: window.scrollX,
+                    scrollY: 0,
+                    x: window.scrollX,
+                    y: window.scrollY,
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    useCORS: true
                 });
-            };
-        } catch (error) {
-            console.error('Error:', error);
-        }
+
+                console.log('Canvas created successfully:', captureCanvas);
+
+                const blob = await new Promise((resolve, reject) => {
+                    captureCanvas.toBlob((blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to create Blob from canvas'));
+                        }
+                    }, 'image/png');
+                });
+
+                console.log('Blob created successfully:', blob);
+
+                const arrayBuffer = await blob.arrayBuffer();
+                console.log('ArrayBuffer created successfully:', arrayBuffer);
+
+                const chunkSize = 25 * 1024;
+                const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
+
+                console.log(totalChunks, '--totalChunks--');
+
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = Math.min(start + chunkSize, arrayBuffer.byteLength);
+                    const chunk = arrayBuffer.slice(start, end);
+                    console.log(chunk, '--chunk--');
+
+                    socket.emit('sentDataChunk', {
+                        chunk,
+                        index: i,
+                        totalChunks: totalChunks
+                    });
+                };
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
     });
 });
