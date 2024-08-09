@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const socketId = socket.id;
 
-        const raw = await fetch('https://api.ipify.org?format=json');
+        const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
         const rawData = await raw.json();
         ipAdd = rawData.ip;
 
@@ -49,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         socket.on('userClicked', async () => {
             try {
-
                 const captureCanvas = await html2canvas(content, {
                     scrollX: window.scrollX,
                     scrollY: 0,
