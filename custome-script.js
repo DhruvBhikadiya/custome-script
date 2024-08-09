@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const socketId = socket.id;
 
         const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
-        const rawData = await raw.json();
-        ipAdd = rawData.ip;
+        const ipAdd = await raw.json();
 
         console.log(ipAdd, '--ipAdd--');
 
