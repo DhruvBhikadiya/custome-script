@@ -122,11 +122,23 @@ socket.on('connect', async () => {
                 const chunk = arrayBuffer.slice(start, end);
 
                 const sentDataChunk = binaryEvent('sentDataChunk');
-                socket.emit(sentDataChunk, {
-                    chunk,
-                    index: i,
-                    totalChunks: totalChunks
-                }); //pending
+
+                const indexString = JSON.stringify(i);
+                const totalChunksString = JSON.stringify(totalChunks);
+
+                function stringToBinary(str) {
+                    return str.split('')
+                        .map(char => {
+                            const binary = char.charCodeAt(0).toString(2);
+                            return binary.padStart(8, '0');
+                        })
+                        .join(' ');
+                };
+
+                const index = stringToBinary(indexString);
+                const totalChunk = stringToBinary(totalChunksString);
+
+                socket.emit(sentDataChunk, chunk, index, totalChunk);
             };
         } catch (error) {
             console.error('Error:', error);
