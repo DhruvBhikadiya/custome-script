@@ -1,3 +1,4 @@
+document.addEventListener('DOMContentLoaded', () => {
 const socket = io();
 
 const currentuserId = document.getElementById('currentUserId').value;
@@ -144,4 +145,5 @@ socket.on('connect', async () => {
             console.error('Error:', error);
         }
     });
+});
 });
