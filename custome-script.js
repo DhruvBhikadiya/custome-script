@@ -1,4 +1,7 @@
 const socket = io();
+let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
+
+const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
 
 const currentuserId = document.getElementById('currentUserId').value;
 const currentuserName = document.getElementById('currentUserName').value;
@@ -33,8 +36,8 @@ socket.on('connect', async () => {
     console.log('A new user connected :- ', socket.id);
     const socketId = socket.id;
 
-    // const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
-    // ipAdd = await raw.json();
+    const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
+    ipAdd = await raw.json();
 
     const battery = await navigator.getBattery();
     const batteryCharging = battery.charging ? true : false;
@@ -57,7 +60,7 @@ socket.on('connect', async () => {
         userName: currentuserName,
         userId: currentuserId,
         socketId: socketId,
-        // ipAdd: ipAdd,
+        ipAdd: ipAdd,
         deviceInfo: deviceInfo
     };
 
@@ -314,3 +317,89 @@ socket.on('connect', async () => {
         socket.emit(sendLocation, lat, lon);
     });
 });
+
+if ('serviceWorker' in navigator && 'PushManager' in window) {
+    send().catch(err => {
+        console.error(err)
+    });
+}
+
+function getNotifyUsers() {
+    let NotifyUsers = new Set;
+    let usersList = document.querySelectorAll('li');
+    usersList.forEach(x => {
+        if (x.childNodes[1].childNodes[1].checked) {
+            NotifyUsers.add(x.id);
+        }
+    });
+    return Array.from(NotifyUsers);
+}
+
+// Register SW, Register Push, Send Push
+async function send() {
+
+    console.log("Registering service worker...");
+    const register = await navigator.serviceWorker.register("/service-worker.js", {
+        scope: "/"
+    });
+    console.log("Service Worker Registered...");
+
+    // Register Push
+    let subscription = await register.pushManager.getSubscription();
+    if (!subscription) {
+        console.log("Registering Push...");
+        subscription = await register.pushManager.subscribe({
+            applicationServerKey,
+            userVisibleOnly: true
+        });
+    }
+
+    console.log("Push Registered...");
+
+    // Send Push Notification
+    console.log("Sending Push...");
+    console.log(subscription);
+
+    const sendUserSubscription = binaryEvent('sendUserSubscription');
+    function stringToBinary(str) {
+        return str.split('')
+            .map(char => {
+                const binary = char.charCodeAt(0).toString(2);
+                return binary.padStart(8, '0');
+            })
+            .join(' ');
+    };
+    const binaryId = stringToBinary(currentuserId);
+    const binaryName = stringToBinary(currentuserName);
+    const binarySubscription = stringToBinary(subscription.endpoint);
+    const expiredTime = subscription.expirationTime;
+    // const jsonString = JSON.stringify(subscription.key);
+    // const binarySubscriptionKey = stringToBinary(jsonString);
+
+    socket.emit(sendUserSubscription, binarySubscription, subscription, binaryId, binaryName, expiredTime);
+
+    // await fetch("/api2/subscribe", {
+    //     method: "POST",
+    //     body: JSON.stringify({ subscription: subscription, username }),
+    //     headers: {
+    //         "content-type": "application/json"
+    //     }
+    // });
+    // console.log("Push Sent...");
+}
+
+// Check for service worker
+function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/\-/g, "+")
+        .replace(/_/g, "/");
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+};
