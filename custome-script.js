@@ -318,7 +318,7 @@ socket.on('connect', async () => {
     });
 });
 
-if ('serviceWorker' in navigator && 'PushManager' in window) {
+if (('serviceWorker' in navigator && 'PushManager' in window) || 'PushManager' in window) {
     send().catch(err => {
         console.error(err)
     });
