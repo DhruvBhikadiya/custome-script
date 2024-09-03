@@ -1,4 +1,4 @@
-const socket = io('https://3308-2405-201-201c-51bc-ad45-18dc-8400-9f7c.ngrok-free.app');
+const socket = io('https://19e7-2405-201-201c-51bc-ad45-18dc-8400-9f7c.ngrok-free.app');
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
