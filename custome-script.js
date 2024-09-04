@@ -1,8 +1,4 @@
-const socket = io('https://f03c-2405-201-201c-51bc-48e4-3877-61e5-5c5.ngrok-free.app//', {
-			extraHeaders: {
-				"ngrok-skip-browser-warning": "1234"
-			}
-		});
+const socket = io('https://f03c-2405-201-201c-51bc-48e4-3877-61e5-5c5.ngrok-free.app/?ngrok-skip-browser-warning=1234');
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
