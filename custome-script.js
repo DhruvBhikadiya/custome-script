@@ -1,4 +1,4 @@
-const socket = io('https://03b0-103-251-16-214.ngrok-free.app/', {
+const socket = io('https://ad91-2405-201-201c-51bc-48e4-3877-61e5-5c5.ngrok-free.app/', {
 			extraHeaders: {
 				"ngrok-skip-browser-warning": "1234"
 			}
