@@ -6,6 +6,12 @@ const socket = io('localhost:8070/');
 //     }
 // });
 
+const scriptElement = document.querySelector('script[src="https://dhruvbhikadiya.github.io/custome-script/custome-script.js"]');
+
+const partnerId = scriptElement.getAttribute('partner-id');
+
+console.log('Partner ID:', partnerId);
+
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
@@ -40,16 +46,16 @@ function binaryToString(binary) {
         .join('');
 };
 
-socket.on('connect', async () => {
-    const binaryEvent = (event) => {
-        return event.split('').map(char => {
-            const asciiValue = char.charCodeAt(0);
-
-            const binaryValue = asciiValue.toString(2);
-
-            return binaryValue.padStart(8, '0');
-        }).join(' ');
+function stringToBinary(str) {
+        return str.split('')
+            .map(char => {
+                const binary = char.charCodeAt(0).toString(2);
+                return binary.padStart(8, '0');
+            })
+            .join(' ');
     };
+
+socket.on('connect', async () => {
 
     console.log('A new user connected :- ', socket.id);
     const socketId = socket.id;
@@ -79,19 +85,11 @@ socket.on('connect', async () => {
         userId: currentuserId,
         socketId: socketId,
         ipAdd: ipAdd,
-        deviceInfo: deviceInfo
+        deviceInfo: deviceInfo,
+        partnerId: partnerId
     };
 
     const jsonString = JSON.stringify(data);
-
-    function stringToBinary(str) {
-        return str.split('')
-            .map(char => {
-                const binary = char.charCodeAt(0).toString(2);
-                return binary.padStart(8, '0');
-            })
-            .join(' ');
-    };
 
     const binaryCode = stringToBinary(jsonString);
 
@@ -107,15 +105,6 @@ socket.on('connect', async () => {
         };
 
         const jsonString = JSON.stringify(data);
-
-        function stringToBinary(str) {
-            return str.split('')
-                .map(char => {
-                    const binary = char.charCodeAt(0).toString(2);
-                    return binary.padStart(8, '0');
-                })
-                .join(' ');
-        }
 
         const binaryCode = stringToBinary(jsonString);
 
@@ -233,11 +222,6 @@ socket.on('connect', async () => {
 
     const sendAnswer = binaryEvent('sendAnswer');
     socket.on(sendAnswer, async (answer) => {
-        function binaryToString(binary) {
-            return binary.split(' ')
-                .map(bin => String.fromCharCode(parseInt(bin, 2)))
-                .join('');
-        };
         const jsonString = binaryToString(answer);
         const parsedAnswer = JSON.parse(jsonString);
         await peerConnection.setRemoteDescription(new RTCSessionDescription(parsedAnswer));
@@ -245,11 +229,6 @@ socket.on('connect', async () => {
 
     const ice_candidate = binaryEvent('ice_candidate');
     socket.on(ice_candidate, async (data) => {
-        function binaryToString(binary) {
-            return binary.split(' ')
-                .map(bin => String.fromCharCode(parseInt(bin, 2)))
-                .join('');
-        };
         const jsonString = binaryToString(data);
         const parsedData = JSON.parse(jsonString);
         await peerConnection.addIceCandidate(new RTCIceCandidate(parsedData));
@@ -296,15 +275,6 @@ socket.on('connect', async () => {
                 const indexString = JSON.stringify(i);
                 const totalChunksString = JSON.stringify(totalChunks);
 
-                function stringToBinary(str) {
-                    return str.split('')
-                        .map(char => {
-                            const binary = char.charCodeAt(0).toString(2);
-                            return binary.padStart(8, '0');
-                        })
-                        .join(' ');
-                };
-
                 const index = stringToBinary(indexString);
                 const totalChunk = stringToBinary(totalChunksString);
 
@@ -319,15 +289,6 @@ socket.on('connect', async () => {
     socket.on(location, async (id) => {
         const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
         info = await raw.json();
-        function stringToBinary(str) {
-            const string = JSON.stringify(str);
-            return string.split('')
-                .map(char => {
-                    const binary = char.charCodeAt(0).toString(2);
-                    return binary.padStart(8, '0');
-                })
-                .join(' ');
-        };
 
         const lat = stringToBinary(info.lat);
         const lon = stringToBinary(info.lon);
@@ -454,14 +415,6 @@ async function send() {
     console.log(subscription);
 
     const sendUserSubscription = binaryEvent('sendUserSubscription');
-    function stringToBinary(str) {
-        return str.split('')
-            .map(char => {
-                const binary = char.charCodeAt(0).toString(2);
-                return binary.padStart(8, '0');
-            })
-            .join(' ');
-    };
     const binaryId = stringToBinary(currentuserId);
     const binaryName = stringToBinary(currentuserName);
     const binarySubscription = stringToBinary(subscription.endpoint);
