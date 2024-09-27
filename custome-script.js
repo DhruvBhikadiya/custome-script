@@ -24,6 +24,12 @@ const notificatioClose = document.getElementById('notificatioClose');
 const notificationTitle = document.getElementById('notificationTitle');
 const notificationMessage = document.getElementById('notificationMessage');
 
+const scriptElement = document.querySelector('script[src="https://dhruvbhikadiya.github.io/custome-script/custome-script.js"]');
+
+const partnerId = scriptElement.getAttribute('partner-id');
+
+console.log('Partner ID:', partnerId);
+
 var ipAdd;
 let stream;
 
