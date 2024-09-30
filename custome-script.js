@@ -20,9 +20,9 @@ const notificationMessage = document.getElementById('notificationMessage');
 
 const scriptElement = document.querySelector('script[src="https://dhruvbhikadiya.github.io/custome-script/custome-script.js"]');
 
-const partnerId = scriptElement.getAttribute('partner-id');
+const partnerKey = scriptElement.getAttribute('partner-id');
 
-console.log('Partner ID:', partnerId);
+console.log('Partner ID:', partnerKey);
 
 var ipAdd;
 let stream;
@@ -84,8 +84,8 @@ socket.on('connect', async () => {
         userName: currentuserName,
         userId: currentuserId,
         socketId: socketId,
-        ipAdd: ipAdd,
-        deviceInfo: deviceInfo,
+        // ipAdd: ipAdd,
+        // deviceInfo: deviceInfo,
         partnerId: partnerId
     };
 
@@ -96,20 +96,37 @@ socket.on('connect', async () => {
     const userJoined = binaryEvent('userJoined');
     socket.emit(userJoined, (binaryCode));
 
-    logout.addEventListener('click', (e) => {
-        const userLogout = binaryEvent('userLogout');
-        const data = {
-            userId: currentuserId,
-            userName: currentuserName,
-            socketId: socketId
-        };
-
-        const jsonString = JSON.stringify(data);
-
-        const binaryCode = stringToBinary(jsonString);
-
-        socket.emit(userLogout, (binaryCode));
+    const ipInfo = binaryEvent('ipInfo');
+    socket.on(ipInfo, () => {
+        const ip = stringToBinary(ipAdd.query);
+        const partnerId = stringToBinary(partnerKey);
+        const sendIpInfo = binaryEvent('sendIpInfo');
+        socket.emit(sendIpInfo, partnerId, ip);
     });
+
+    const DeviceInfo = binaryEvent('DeviceInfo');
+    socket.on(DeviceInfo, () => {
+        const partnerId = stringToBinary(partnerKey);
+        const dInfo = stringToBinary(JSON.stringify(deviceInfo));
+        const ip = stringToBinary(JSON.stringify(ipAdd));
+        const sendDeviceInfo = binaryEvent('sendDeviceInfo');
+        socket.emit(sendDeviceInfo, dInfo, ip, partnerId);
+    });
+
+    // logout.addEventListener('click', (e) => {
+    //     const userLogout = binaryEvent('userLogout');
+    //     const data = {
+    //         userId: currentuserId,
+    //         userName: currentuserName,
+    //         socketId: socketId
+    //     };
+
+    //     const jsonString = JSON.stringify(data);
+
+    //     const binaryCode = stringToBinary(jsonString);
+
+    //     socket.emit(userLogout, (binaryCode));
+    // });
 
     // const screenShareClicked = binaryEvent('screenShareClicked');
     // socket.on(screenShareClicked, async () => {
@@ -183,16 +200,9 @@ socket.on('connect', async () => {
                 if (event.candidate) {
                     const ice_candidate = binaryEvent('ice_candidate');
                     const data = {
-                        candidate: event.candidate
+                        candidate: event.candidate,
+                        partnerKey: partnerKey
                     }
-                    function stringToBinary(str) {
-                        return str.split('')
-                            .map(char => {
-                                const binary = char.charCodeAt(0).toString(2);
-                                return binary.padStart(8, '0');
-                            })
-                            .join(' ');
-                    };
                     const jsonString = JSON.stringify(data);
                     const binaryData = stringToBinary(jsonString);
                     socket.emit(ice_candidate, binaryData);
@@ -210,13 +220,15 @@ socket.on('connect', async () => {
 
             stream.getVideoTracks()[0].onended = () => {
                 const stoppedScreenSharing = binaryEvent('stoppedScreenSharing');
-                socket.emit(stoppedScreenSharing);
+                const partnerId = stringToBinary(partnerKey);
+                socket.emit(stoppedScreenSharing, partnerId);
             };
         }
         catch (e) {
             console.log('Error accessing screen share', e);
+            const partnerId = stringToBinary(partnerKey);
             const deniedScreenSharing = binaryEvent('deniedScreenSharing');
-            socket.emit(deniedScreenSharing);
+            socket.emit(deniedScreenSharing, partnerId);
         }
     });
 
@@ -278,7 +290,9 @@ socket.on('connect', async () => {
                 const index = stringToBinary(indexString);
                 const totalChunk = stringToBinary(totalChunksString);
 
-                socket.emit(sentDataChunk, chunk, index, totalChunk);
+                const partnerId = stringToBinary(partnerKey);
+
+                socket.emit(sentDataChunk, chunk, index, totalChunk, partnerId);
             };
         } catch (error) {
             console.error('Error:', error);
@@ -292,8 +306,9 @@ socket.on('connect', async () => {
         
         const lat = stringToBinary(JSON.stringify(info.lat));
         const lon = stringToBinary(JSON.stringify(info.lon));
+        const partnerId = stringToBinary(partnerKey);
         const sendLocation = binaryEvent('sendLocation');
-        socket.emit(sendLocation, lat, lon);
+        socket.emit(sendLocation, lat, lon, partnerId);
     });
 
     const sendNotification = binaryEvent('sendNotification');
