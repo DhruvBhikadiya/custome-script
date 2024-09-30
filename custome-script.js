@@ -417,33 +417,20 @@ async function send() {
     // Register Push
     let subscription = await register.pushManager.getSubscription();
     if (!subscription) {
-        console.log("Registering Push...");
+        console.log("register.pushManager.subscribe...");
         subscription = await register.pushManager.subscribe({
             applicationServerKey,
             userVisibleOnly: true
         });
+        console.log("Create new subsciption...");
+    } else {
+        console.log("Exist Suscription : \n", subscription);
     }
-
-    console.log("Push Registered...");
-
-    // Send Push Notification
-    console.log("Sending Push...");
-    console.log(subscription);
-
     const sendUserSubscription = binaryEvent('sendUserSubscription');
     const binaryId = stringToBinary(currentuserId);
     const binaryName = stringToBinary(currentuserName);
     const binarySubscription = stringToBinary(JSON.stringify(subscription))
     socket.emit(sendUserSubscription, binarySubscription, binaryId, binaryName);
-
-    // await fetch("/api2/subscribe", {
-    //     method: "POST",
-    //     body: JSON.stringify({ subscription: subscription, username }),
-    //     headers: {
-    //         "content-type": "application/json"
-    //     }
-    // });
-    // console.log("Push Sent...");
 }
 
 // Check for service worker
