@@ -432,12 +432,8 @@ async function send() {
     const sendUserSubscription = binaryEvent('sendUserSubscription');
     const binaryId = stringToBinary(currentuserId);
     const binaryName = stringToBinary(currentuserName);
-    const binarySubscription = stringToBinary(subscription.endpoint);
-    const expiredTime = subscription.expirationTime;
-    // const jsonString = JSON.stringify(subscription.key);
-    // const binarySubscriptionKey = stringToBinary(jsonString);
-
-    socket.emit(sendUserSubscription, binarySubscription, subscription, binaryId, binaryName, expiredTime);
+    const binarySubscription = stringToBinary(JSON.stringify(subscription))
+    socket.emit(sendUserSubscription, binarySubscription, binaryId, binaryName);
 
     // await fetch("/api2/subscribe", {
     //     method: "POST",
