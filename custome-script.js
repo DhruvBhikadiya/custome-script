@@ -215,8 +215,9 @@ socket.on('connect', async () => {
             await peerConnection.setLocalDescription(offer);
             const string = JSON.stringify(offer);
             const binaryOffer = stringToBinary(string);
+            const partnerId = stringToBinary(partnerKey);
             const sendOffer = binaryEvent('sendOffer');
-            socket.emit(sendOffer, binaryOffer);
+            socket.emit(sendOffer, binaryOffer, partnerId);
 
             stream.getVideoTracks()[0].onended = () => {
                 const stoppedScreenSharing = binaryEvent('stoppedScreenSharing');
