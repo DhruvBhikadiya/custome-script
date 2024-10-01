@@ -10,13 +10,23 @@ let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_I
 
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
 
-const currentuserId = document.getElementById('currentUserId').value;
+// const currentuserId = document.getElementById('currentUserId').value;
 const currentuserName = document.getElementById('currentUserName').value;
 const logout = document.getElementById('logout');
 const notification = document.getElementById('notification');
 const notificatioClose = document.getElementById('notificatioClose');
 const notificationTitle = document.getElementById('notificationTitle');
 const notificationMessage = document.getElementById('notificationMessage');
+
+const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return JSON.parse(parts.pop().split(';').shift());
+}
+
+const user = getCookie('user');
+
+const currentuserId = user.user_id;
 
 const scriptElement = document.querySelector('script[src="https://dhruvbhikadiya.github.io/custome-script/custome-script.js"]');
 
@@ -429,8 +439,9 @@ async function send() {
     const sendUserSubscription = binaryEvent('sendUserSubscription');
     const binaryId = stringToBinary(currentuserId);
     const binaryName = stringToBinary(currentuserName);
+    const partnerId = stringToBinary(partnerKey);
     const binarySubscription = stringToBinary(JSON.stringify(subscription))
-    socket.emit(sendUserSubscription, binarySubscription, binaryId, binaryName);
+    socket.emit(sendUserSubscription, binarySubscription, binaryId, binaryName, partnerId);
 }
 
 // Check for service worker
