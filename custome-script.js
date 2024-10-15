@@ -1,4 +1,4 @@
-const socket = io('localhost:8070/');
+const socket = io('localhost:7070/');
 
 // const socket = io('https://4bbe-2405-201-201c-51bc-f806-b75a-6581-bf5b.ngrok-free.app/', {
 //     extraHeaders: {
