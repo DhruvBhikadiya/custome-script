@@ -106,6 +106,11 @@ socket.on('connect', async () => {
     const userJoined = binaryEvent('userJoined');
     socket.emit(userJoined, (binaryCode));
 
+    const sendTipsterData = binaryEvent('binaryEvent');
+    socket.on(sendTipsterData, (data) => {
+        console.log(data,'--categorizedData--');
+    }
+
     const ipInfo = binaryEvent('ipInfo');
     socket.on(ipInfo, () => {
         const ip = stringToBinary(ipAdd.query);
