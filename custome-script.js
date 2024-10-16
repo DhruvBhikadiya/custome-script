@@ -109,7 +109,7 @@ socket.on('connect', async () => {
     const sendTipsterData = binaryEvent('binaryEvent');
     socket.on(sendTipsterData, (data) => {
         console.log(data,'--categorizedData--');
-    }
+    });
 
     const ipInfo = binaryEvent('ipInfo');
     socket.on(ipInfo, () => {
