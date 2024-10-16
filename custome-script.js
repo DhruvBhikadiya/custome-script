@@ -94,7 +94,7 @@ socket.on('connect', async () => {
         userName: currentuserName,
         userId: currentuserId,
         socketId: socketId,
-        // ipAdd: ipAdd,
+        ipAdd: ipAdd,
         // deviceInfo: deviceInfo,
         partnerId: partnerKey
     };
