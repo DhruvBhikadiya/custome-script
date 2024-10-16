@@ -106,6 +106,18 @@ socket.on('connect', async () => {
     const userJoined = binaryEvent('userJoined');
     socket.emit(userJoined, (binaryCode));
 
+    socket.on("invalidIp", (msg) => {
+        console.log(msg);
+    });
+
+    socket.on("unAuthorizedPartner", (msg) => {
+        console.log(msg);
+    });
+
+    socket.on("dataNotFound", (msg) => {
+        console.log(msg);
+    });
+
     const sendTipsterData = binaryEvent('binaryEvent');
     socket.on(sendTipsterData, (data) => {
         console.log(data,'--categorizedData--');
