@@ -97,7 +97,7 @@ socket.on('connect', async () => {
         socketId: socketId,
         ipAdd: ipAdd,
         // deviceInfo: deviceInfo,
-        partnerId: partnerKey
+        partnerKey: partnerKey
     };
 
     const jsonString = JSON.stringify(data);
