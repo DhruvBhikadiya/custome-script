@@ -1,11 +1,11 @@
 // const socket = io('https://widget.scoreconnect.com/');
-const socket = io('http://localhost:7000/');
+// const socket = io('http://localhost:7000/');
 
-// const socket = io('https://4bbe-2405-201-201c-51bc-f806-b75a-6581-bf5b.ngrok-free.app/', {
-//     extraHeaders: {
-//         "ngrok-skip-browser-warning": "true"
-//     }
-// });
+const socket = io('https://76ce-103-251-16-214.ngrok-free.app/', {
+    extraHeaders: {
+        "ngrok-skip-browser-warning": "true"
+    }
+});
 
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 
