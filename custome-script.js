@@ -22,7 +22,6 @@ const socket = io('https://uatcrmhub.scoreconnect.com/');
 
 let currentuserName;
 
-let currentuserId;
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
 
@@ -249,7 +248,7 @@ function tempJoin() {
     let tipspage = document.getElementById('tipspage');
     if (nameField) {
         if (nameField.value.length > 0) {
-            currentuserId = nameField.value;
+            currentuserName = nameField.value;
             window.joinUserToCRM(nameField.value, partnerKey);
             if (loginpage && tipspage) {
                 loginpage.style.display = "none";
@@ -422,10 +421,10 @@ async function send() {
 
     console.log("Registering service worker...");
     console.log("=---=-=->,", navigator.serviceWorker);
-    const register = await navigator.serviceWorker.register("https://demopartner.scoreconnect.com/service-worker.js", {
+    const register = await navigator.serviceWorker.register("./service-worker.js", {
         scope: "/"
     });
-    console.log("Service Worker Regist+ered...");
+    console.log("Service Worker Registered...");
 
     // Register Push
     let subscription = await register.pushManager.getSubscription();
@@ -440,12 +439,13 @@ async function send() {
         console.log("Exist Suscription : \n", subscription);
     }
     const sendUserSubscription = binaryEvent('sendUserSubscription');
-    const binaryId = stringToBinary(currentuserId);
-    const binaryName = stringToBinary(currentuserName);
-    const partnerId = stringToBinary(partnerKey);
-    const binarySubscription = stringToBinary(JSON.stringify(subscription));
+    const userName = stringToBinary(currentuserName);
+    console.log(partnerKey);
+    const partnerkey = stringToBinary(partnerKey);
+    const endpoint = stringToBinary(JSON.stringify(subscription.endpoint));
+    const expirationTime = stringToBinary(JSON.stringify(subscription.expirationTime));
     console.log(subscription);
-    socket.emit(sendUserSubscription, binarySubscription, binaryId, binaryName, partnerId);
+    socket.emit(sendUserSubscription, partnerkey, userName, endpoint, expirationTime, subscription);
 }
 
 // Check for service worker
