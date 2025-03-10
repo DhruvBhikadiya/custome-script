@@ -18,7 +18,7 @@ htmlcanvasscript.setAttribute('integrity','sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wg
 htmlcanvasscript.setAttribute('crossorigin','anonymous');
 htmlcanvasscript.setAttribute('referrerpolicy','no-referrer');
 
-const socket = io('https://uatcrmhub.scoreconnect.com/');
+const socket = io('https://51b5-103-251-16-214.ngrok-free.app');
 
 let currentuserName;
 
