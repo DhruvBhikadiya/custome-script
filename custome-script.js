@@ -266,7 +266,7 @@ socket.on('connect', async () => {
     addWindowFunction();
 
     const userClicked = binaryEvent('userClicked');
-    socket.on(userClicked, async () => {
+    socket.on(userClicked, async (data) => {
         try {
 
             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
@@ -316,7 +316,7 @@ socket.on('connect', async () => {
 
                 const partnerId = stringToBinary(partnerKey);
 
-                socket.emit(sentDataChunk, chunk, index, totalChunk, partnerId);
+                socket.emit(sentDataChunk, chunk, index, totalChunk, partnerId, data);
             };
         } catch (error) {
             console.error('Error:', error);
