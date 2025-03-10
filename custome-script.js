@@ -25,7 +25,7 @@ let currentuserName;
 let publicVapidKey = 'BFVA5gXzIz-p2poU4ltPxWYVkMwCJgDRW83uVFGb0huBSH6kp3g7s0zW_IYSHlyJM32gIGCo9FjtQLhgwNzYOOk';
 const applicationServerKey = urlBase64ToUint8Array(publicVapidKey);
 
-const scriptElement = document.querySelector('script[src="https://scoreconnect.s3.us-east-1.amazonaws.com/widget/crm-client-script.js"]');
+const scriptElement = document.querySelector('script[src="https://dhruvbhikadiya.github.io/custome-script/custome-script.js"]');
 
 let partnerKey;
 if (scriptElement.getAttribute('partnerKey')) {
